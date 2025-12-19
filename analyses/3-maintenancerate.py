@@ -1,7 +1,6 @@
 import sys
 from pyspark import SparkContext
 import time
-from operator import add
 
 
 # start spark with 1 worker thread
@@ -38,7 +37,7 @@ machines = entries.map(
     )
 machines = machines.groupByKey()
 
-def get_maintenance(events):
+def get_maintenance_rate(events):
     added = []
     removed = []
     for event in events:
@@ -46,30 +45,31 @@ def get_maintenance(events):
             added.append(event)
         elif event[1] == "1":
             removed.append(event)
-    maintenance_cost = 0
+    maintenance_time = 0
     cpu = added[0][2]
     for i in range(len(removed)):
         # Find the time from the machine being removed to it being reconnected
         if i + 1 < len(added):
             start_time = removed[i][0]
             end_time = added[i + 1][0]
-            if start_time.isnumeric() and end_time.isnumeric() and cpu.isnumeric():
-                maintenance_cost += float(cpu) * (float(end_time) - float(start_time))
+            if start_time.isnumeric() and end_time.isnumeric():
+                maintenance_time += float(end_time) - float(start_time)
     
     start_time = added[0][0]
     if len(removed) > 0 and added[-1][0] < removed[-1][0]:
         end_time = removed[-1][0]
     else:
         end_time = last_timestamp   # approximate the end time to the last detected timestamp
-    if start_time.isnumeric() and end_time.isnumeric() and cpu.isnumeric():
-        total_cost = float(cpu) * (float(end_time) - float(start_time))
-        return maintenance_cost / total_cost
+    if start_time.isnumeric() and end_time.isnumeric():
+        total_time = float(end_time) - float(start_time)
+        return (cpu, maintenance_time / total_time)
     else: 
-        return 0
+        return (cpu, 0)
 
-costs = machines.mapValues(get_maintenance)
+rates = machines.mapValues(get_maintenance_rate).values().reduceByKey(lambda x, y: (x + y) / 2)
 
-print(costs.values().mean())
+for rate in sorted(rates.collect(), reverse=True):
+    print(rate)
 
 
 # prevent the program from terminating immediatly

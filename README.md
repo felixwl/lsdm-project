@@ -3,7 +3,7 @@
 ## Starting the notebook server
 Run the following to start the jupyter notebook in docker,
 
-    docker run -it --rm -p 4040:4040 -p 8888:8888 -v .:/home/jovyan/work jupyter/pyspark-notebook
+    sudo docker run -it --rm -p 4040:4040 -p 8888:8888 -v .:/home/jovyan/work jupyter/pyspark-notebook
 
 then open the printed localhost url.
 
@@ -67,11 +67,19 @@ DONE (TODO: Comment)
 
 3. Is there a class of machines, according to their CPU, that stands out with a higher maintenance rate, as compared to other classes ?
 
+The cpu with capacity 0.5 have a higher maintenance rate.
+
 4. What is the distribution of the number of jobs/tasks per scheduling class? Comment on the results.
+
+The latency-sensitive jobs are more rare, and non-production jobs are most common, but the distribution between 0,1 and 2 is fairly even.
 
 5. Would you qualify the percentage of jobs/tasks that got killed or evicted as important?
 
+Yes, around 40%.
+
 6. Do tasks with a low scheduling class have a higher probability of being evicted?
+
+The opposite, actually.
 
 7. In general, do tasks from the same job run on the same machine? Comment on the observed locality strategy and its pros and cons.
 
