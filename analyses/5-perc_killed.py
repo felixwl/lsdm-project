@@ -1,7 +1,4 @@
-import sys
 from pyspark import SparkContext
-import time
-from operator import add
 
 
 # start spark with 1 worker thread

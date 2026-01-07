@@ -1,7 +1,5 @@
-import sys
 from pyspark import SparkContext
-import time
-from operator import add
+
 
 def all_same(seq):
     if len(seq) <= 1:
