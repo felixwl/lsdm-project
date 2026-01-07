@@ -29,17 +29,17 @@ CPU and memory usage during the tasks.
 
 
 ### Download
-I have numbers from 200 to 204, meaning files
+I have numbers from 85 to 89, meaning files
 
-    part-00200-of-?????.csv.gz
-    part-00201-of-?????.csv.gz
-    part-00202-of-?????.csv.gz
-    part-00203-of-?????.csv.gz
-    part-00204-of-?????.csv.gz
+    part-00085-of-?????.csv.gz
+    part-00086-of-?????.csv.gz
+    part-00087-of-?????.csv.gz
+    part-00088-of-?????.csv.gz
+    part-00089-of-?????.csv.gz
 
 The full command for copying a file is
 
-    gsutil cp gs://clusterdata-2011-2/TABLE/part-0020?-of-?????.csv.gz ./dataset/TABLE/
+    gsutil cp gs://clusterdata-2011-2/TABLE/part-0008[5-9]-of-?????.csv.gz ./dataset/TABLE/
 
 For machine_attributes and machine_events, there only seems to exist one table, so the command is always
 

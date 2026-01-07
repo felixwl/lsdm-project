@@ -10,7 +10,7 @@ sc.setLogLevel("ERROR")
 
 
 # read the input file into an RDD[String]
-wholeFile = sc.textFile("./dataset/job_events/part-00200-of-00500.csv.gz")
+wholeFile = sc.textFile("./dataset/job_events/part-00085-of-00500.csv.gz")
 
 filter_by = "time"
 
