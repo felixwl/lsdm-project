@@ -79,9 +79,11 @@ Yes, around 40%.
 
 6. Do tasks with a low scheduling class have a higher probability of being evicted?
 
-The opposite, actually.
+The opposite, actually. The higher the scheduling class, the higher the probability of being evicted.
 
 7. In general, do tasks from the same job run on the same machine? Comment on the observed locality strategy and its pros and cons.
+
+Only in rare cases (0.75% on part-00085 and 0% on part-00087) does it happen. This seems to impl that the locality strategy is to not try to schedule tasks from the same job on the same machine. This makes scheduling faster and reduces overhead, but has the downside of giving less opportunity for caching between tasks.
 
 8. Are the tasks that request the more resources the one that consume the more resources?
 
