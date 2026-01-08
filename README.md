@@ -39,7 +39,7 @@ I have numbers from 85 to 89, meaning files
 
 The full command for copying a file is
 
-    gsutil cp gs://clusterdata-2011-2/TABLE/part-0008[5-9]-of-?????.csv.gz ./dataset/TABLE/
+    gsutil -m cp gs://clusterdata-2011-2/TABLE/part-0008[5-9]-of-?????.csv.gz ./dataset/TABLE/
 
 For machine_attributes and machine_events, there only seems to exist one table, so the command is always
 
@@ -86,6 +86,8 @@ The opposite, actually. The higher the scheduling class, the higher the probabil
 Only in rare cases (0.75% on part-00085 and 0% on part-00087) does it happen. This seems to impl that the locality strategy is to not try to schedule tasks from the same job on the same machine. This makes scheduling faster and reduces overhead, but has the downside of giving less opportunity for caching between tasks.
 
 8. Are the tasks that request the more resources the one that consume the more resources?
+
+No, the top 10 tasks that request the most resources are not in the top 10 of tasks that use the most resources.
 
 9. Can we observe correlations between peaks of high resource consumption on some machines and task eviction events?
 
