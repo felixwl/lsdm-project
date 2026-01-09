@@ -2,9 +2,6 @@ from pyspark import SparkContext
 from operator import add
 
 
-def resource_metric(cpu, memory):
-    return float(cpu) + float(memory)
-
 # start spark with 1 worker thread
 sc = SparkContext("local[1]")
 sc.setLogLevel("ERROR")
@@ -49,7 +46,7 @@ machine_resources = machine_events.map(
         (x[me_event_type_index], x[me_cpu_index], x[me_memory_index])
         )
     ).filter(lambda x: x[1][0] == "0" and x[1][1].isnumeric() and x[1][2].isnumeric())
-machine_resources = machine_resources.mapValues(lambda x: resource_metric(x[1], x[2]))
+machine_resources = machine_resources.mapValues(lambda x: (x[1], x[2]))
 
 print(machine_resources.count())
 
@@ -60,12 +57,13 @@ events_resources = task_events.map(
         (x[te_event_type_index], x[te_cpu_request_index], x[te_memory_request_index])
     )
 ).filter(lambda x: x[1][0] == "1")
-events_resources = events_resources.mapValues(lambda x: resource_metric(x[1], x[2]))
-events_resources = events_resources.groupByKey()
+used_resources = events_resources.mapValues(lambda x: (x[1], x[2]))
+used_resources = events_resources.reduceByKey(lambda x, y: (x[0] + y[0], x[1] + y[1]))
 
 # Join the RDDs
-available_committed = machine_resources.join(events_resources)
-over_committed = available_committed.mapValues(lambda x: sum([1 if c >= x[0] else 0 for c in x[1]]) / len(x[1]))
+available_committed = machine_resources.join(used_resources)
+over_committed = available_committed.mapValues(
+    lambda x: 1 if x[0][0] >= x[1][0] or x[0][1] >= x[1][1] else 0)
 
 # Print result
 print("Rate of over-committals:")
