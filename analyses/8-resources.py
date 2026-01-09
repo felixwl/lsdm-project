@@ -17,7 +17,7 @@ filter_by = "job ID"
 
 # filter out the first line from the initial RDD
 events = events_file.filter(lambda x: not (filter_by in x))
-usage = events_file.filter(lambda x: not (filter_by in x))
+usage = usage_file.filter(lambda x: not (filter_by in x))
 
 # split each line into an array of items
 events = events.map(lambda x : x.split(','))
@@ -40,7 +40,7 @@ event_disk_request_index = 11
 usage_job_id_index = 2
 usage_task_index_index = 3
 usage_cpu_index = 5
-usage_memory_index = 7
+usage_memory_index = 6
 usage_disk_index = 12
 
 # Get resource requests for each schedule task event
