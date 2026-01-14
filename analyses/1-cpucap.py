@@ -21,12 +21,14 @@ entries = entries.map(lambda x : x.split(','))
 # keep the RDD in memory
 entries.cache()
 
-n_entries = entries.count()
-
+machine_id_index = 1
 cpus_index = 4
-# TODO: Only count every machine once
+
+# Get cpu capacity for each machine
+machines = entries.map(lambda x: (x[machine_id_index], x[cpus_index])).distinct()
+n_entries = machines.count()
 # Get number of entries for each cpu capacity
-cpu_capacities = entries.map(lambda x: (x[cpus_index], 1)).reduceByKey(add)
+cpu_capacities = machines.values().map(lambda x: (x, 1)).reduceByKey(add)
 # Normalize values
 cpu_capacities = cpu_capacities.mapValues(lambda x: x/n_entries)
 

@@ -94,6 +94,6 @@ No, the top 10 tasks that request the most resources are not in the top 10 of ta
 10. How often does it happen that the resources of a machine are over-committed ?
 
 
-11. Your original question 1. Motivate the originality of the question.
+11. Are tasks less likely to be evicted wen run on a machine with more resources?
 
-12. Your original question 2. Motivate the originality of the question.
+12. What combination of priority and scheduling class leads to the highest and lowest eviction rates?

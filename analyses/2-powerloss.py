@@ -1,7 +1,11 @@
 from pyspark import SparkContext
 
-
 def get_maintenance(events):
+    """ 
+    Get the ratio of computational power lost during downtime and computational power
+    available during the whole timeframe of the events. 
+    """
+    # Split the events into ADD and REMOVE events
     added = []
     removed = []
     for event in events:
@@ -9,6 +13,7 @@ def get_maintenance(events):
             added.append(event)
         elif event[1] == "1":
             removed.append(event)
+    # Get the computational power lost during the time between REMOVE and ADD events
     maintenance_cost = 0
     cpu = added[0][2]
     for i in range(len(removed)):
@@ -19,6 +24,7 @@ def get_maintenance(events):
             if start_time.isnumeric() and end_time.isnumeric() and cpu.isnumeric():
                 maintenance_cost += float(cpu) * (float(end_time) - float(start_time))
     
+    # Get the total computational power between ADD event to the last REMOVE event
     start_time = added[0][0]
     if len(removed) > 0 and added[-1][0] < removed[-1][0]:
         end_time = removed[-1][0]
@@ -54,6 +60,7 @@ machine_id_index = 1
 event_type_index = 2
 cpus_index = 4
 
+# Get the last timestamp in the dataset to use as end time
 last_timestamp = entries.map(lambda x: x[time_index ]).sortBy(lambda x: x, False).take(1)[0]
 
 # Group by machine
@@ -64,6 +71,7 @@ machines = entries.map(
     )
 machines = machines.groupByKey()
 
+# Get the computational power loss percentage for each machine
 costs = machines.mapValues(get_maintenance)
 
 print(costs.values().mean())

@@ -24,7 +24,9 @@ entries.cache()
 job_ID_index = 2
 scheduling_class_index = 5
 
+# Get the scheduling class of each job
 jobs = entries.map(lambda x: (x[job_ID_index], x[scheduling_class_index])).distinct()
+# Get the percentage of jobs belonging to each scheduling class
 total_jobs = jobs.count()
 schedulings = jobs.map(lambda x: (x[1], 1)).reduceByKey(add).mapValues(lambda x: x / total_jobs)
 

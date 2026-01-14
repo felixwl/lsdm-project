@@ -23,8 +23,10 @@ entries.cache()
 job_ID_index = 2
 event_type_index = 3
 
+# Get the jobs belonging to each event type
 job_events = entries.map(lambda x: (x[job_ID_index], x[event_type_index])).groupByKey()
 n_jobs = job_events.count()
+# Get the EVICT and KILL events
 aborted_jobs = job_events.filter(lambda x: "2" in x[1] or "5" in x[1])
 n_aborted = aborted_jobs.count()
 
