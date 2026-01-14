@@ -1,5 +1,4 @@
 from pyspark import SparkContext
-from operator import add
 
 
 # start spark with 1 worker thread
