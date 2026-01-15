@@ -45,13 +45,19 @@ task_priority_class = entries.map(
 
 task_evictions = task_events.mapValues(lambda x: 1 if x == "2" else 0).reduceByKey(max)
 
-priority_class_evictions = task_priority_class.join(task_evictions).values()
-priority_class_eviction_rates = priority_class_evictions.reduceByKey(lambda x,y : (x + y ) / 2)
+# Join task -> (scheduling_class, priority) with task eviction flag
+priority_class_evictions = task_priority_class.join(task_evictions).values()  # ((sclass, priority), evicted_flag)
+
+# Map to ((sclass, priority), (evicted_count, total_count)) and aggregate
+priority_pairs = priority_class_evictions.map(lambda x: (x[0], (int(x[1]), 1)))
+priority_aggregated = priority_pairs.reduceByKey(lambda a, b: (a[0] + b[0], a[1] + b[1]))
+
+# Compute eviction rate per (scheduling_class, priority)
+priority_class_eviction_rates = priority_aggregated.mapValues(lambda s_c: s_c[0] / s_c[1] if s_c[1] > 0 else 0.0)
 priority_class_eviction_rates = priority_class_eviction_rates.sortBy(lambda x: x[1], ascending=False)
 
-
-for eviction_rate in priority_class_eviction_rates.collect():
-    print(f"Scheduling class: {eviction_rate[0][0]}, Priority: {eviction_rate[0][1]}, Eviction rate: {eviction_rate[1]}")
+for ((sclass, priority), rate) in priority_class_eviction_rates.collect():
+    print(f"Scheduling class: {sclass}, Priority: {priority}, Eviction rate: {rate}")
 
 # prevent the program from terminating immediatly
 input("Press Enter to continue...")

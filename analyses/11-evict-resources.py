@@ -51,7 +51,7 @@ machine_resources = machine_events.map(
         (x[me_event_type_index], x[me_cpu_index], x[me_memory_index])
         )
     ).filter(lambda x: x[1][0] == "0" and x[1][1].isnumeric() and x[1][2].isnumeric())
-machine_resources = machine_resources.mapValues(lambda x: (x[1], x[2]))
+machine_resources = machine_resources.mapValues(lambda x: (float(x[1]), float(x[2])))
 
 # Get the event type and machine id for each task event
 events = task_events.map(
@@ -61,15 +61,23 @@ task_machines = task_events.map(
     lambda x: (
         "{}_{}".format(x[te_job_id_index], x[te_task_id_index]), x[te_machine_id_index]))
 
-# Mark the tasks that have eviction events
+# Mark the tasks that have eviction events (1 if evicted at least once, else 0)
 tasks_evicted = events.mapValues(lambda x: 1 if x == "2" else 0).reduceByKey(max)
 
-# Get the events as eviction (1) or other (0) for each machne
-machine_evictions = task_machines.join(tasks_evicted).values()
+# Get the events as eviction (1) or other (0) for each machine
+machine_evictions = task_machines.join(tasks_evicted).values()  # (machine_id, evicted_flag)
 
-# Get the eviction rate for each resource class
-resource_eviction_rates = machine_resources.join(machine_evictions).values()
-resource_eviction_rates = resource_eviction_rates.reduceByKey(lambda x, y: (x + y) / 2)
+# Join machine resources with machine-level eviction flags
+# After .values() we have ((cpu, memory), evicted_flag)
+resource_eviction_pairs = machine_resources.join(machine_evictions).values()
 
-for eviction_rate in resource_eviction_rates.collect():
-    print(f"CPU: {eviction_rate[0][0]}, Memory: {eviction_rate[0][1]}, Eviction rate: {eviction_rate[1]}")
+# Map to (resource_key, (evicted_count, total_count)) and aggregate
+# resource_key is a tuple: (cpu, memory)
+resource_pairs = resource_eviction_pairs.map(lambda x: (x[0], (int(x[1]), 1)))
+resource_aggregated = resource_pairs.reduceByKey(lambda a, b: (a[0] + b[0], a[1] + b[1]))
+
+# Compute eviction rate = evicted_count / total_count
+resource_eviction_rates = resource_aggregated.mapValues(lambda s_c: s_c[0] / s_c[1] if s_c[1] > 0 else 0.0)
+
+for (cpu_mem, rate) in resource_eviction_rates.collect():
+    print(f"CPU: {cpu_mem[0]}, Memory: {cpu_mem[1]}, Eviction rate: {rate}")
